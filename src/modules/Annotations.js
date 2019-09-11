@@ -328,6 +328,9 @@ export default class Annotations {
       )
     }
 
+    // Lấy vị trí X và Y
+    // Trường hợp 1: cấu hình là chuỗi
+    // Trường hợp 2: cấu hình là số
     if (typeof anno.x === 'string') {
       let catIndex = w.globals.labels.indexOf(anno.x)
       const xLabel = w.globals.dom.baseEl.querySelector(
@@ -416,6 +419,8 @@ export default class Annotations {
       optsPoints
     )
 
+    // Chỗ này có thể add thêm animation và event
+    // point.node
     parent.appendChild(point.node)
 
     const text = anno.label.text ? anno.label.text : ''
@@ -435,8 +440,12 @@ export default class Annotations {
       rel: index
     })
 
+    // Chỗ này có thể add thêm animation và event
+    // elText.node
     parent.appendChild(elText.node)
 
+    // Tùy chỉnh gì ko biết
+    // Có thể là add thêm css
     if (anno.customSVG.SVG) {
       let g = this.graphics.group({
         class:

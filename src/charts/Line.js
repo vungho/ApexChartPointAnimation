@@ -247,7 +247,7 @@ class Line {
               (this.isReversed
                 ? series[i][j + 1] / yRatio[this.yaxisIndex]
                 : 0) *
-                2
+              2
           }
         } else {
           if (
@@ -265,7 +265,7 @@ class Line {
               (this.isReversed
                 ? series[i][j + 1] / yRatio[this.yaxisIndex]
                 : 0) *
-                2
+              2
           }
         }
 
@@ -445,21 +445,21 @@ class Line {
   }
 
   createPaths({
-    series,
-    i,
-    j,
-    x,
-    y,
-    pX,
-    pY,
-    xDivision,
-    areaBottomY,
-    linePath,
-    areaPath,
-    linePaths,
-    areaPaths,
-    seriesIndex
-  }) {
+                series,
+                i,
+                j,
+                x,
+                y,
+                pX,
+                pY,
+                xDivision,
+                areaBottomY,
+                linePath,
+                areaPath,
+                linePaths,
+                areaPaths,
+                seriesIndex
+              }) {
     let w = this.w
     let graphics = new Graphics(this.ctx)
 
@@ -562,16 +562,16 @@ class Line {
   }
 
   calculatePoints({
-    series,
-    realIndex,
-    x,
-    y,
-    i,
-    j,
-    prevY,
-    categoryAxisCorrection,
-    xRatio
-  }) {
+                    series,
+                    realIndex,
+                    x,
+                    y,
+                    i,
+                    j,
+                    prevY,
+                    categoryAxisCorrection,
+                    xRatio
+                  }) {
     let w = this.w
 
     let ptX = []
@@ -644,14 +644,14 @@ class Line {
   }
 
   determineFirstPrevY({
-    i,
-    series,
-    yRatio,
-    zeroY,
-    prevY,
-    prevSeriesY,
-    lineYPosition
-  }) {
+                        i,
+                        series,
+                        yRatio,
+                        zeroY,
+                        prevY,
+                        prevSeriesY,
+                        lineYPosition
+                      }) {
     let w = this.w
     if (typeof series[i][0] !== 'undefined') {
       if (w.config.chart.stacked) {
