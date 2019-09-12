@@ -4,7 +4,7 @@
   "description": "A JavaScript Chart Library",
   "repository": {
     "type": "git",
-    "url": "https://github.com/apexcharts/apexcharts.js.git"
+    "url": "https://github.com/vungho/ApexChartPointAnimation.git"
   },
   "main": "dist/apexcharts.common.js",
   "module": "dist/apexcharts.esm.js",
@@ -89,7 +89,7 @@
     "email": "juned.chhipa@gmail.com"
   },
   "bugs": {
-    "url": "https://github.com/apexcharts/apexcharts.js/issues"
+    "url": "https://github.com/vungho/ApexChartPointAnimation/issues"
   },
   "license": "MIT",
   "licenses": [
