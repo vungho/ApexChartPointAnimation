@@ -1,6 +1,6 @@
 {
-  "name": "apexcharts",
-  "version": "3.8.5",
+  "name": "vdat-apexcharts",
+  "version": "1.0.0",
   "description": "A JavaScript Chart Library",
   "repository": {
     "type": "git",
