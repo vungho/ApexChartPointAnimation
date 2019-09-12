@@ -808,6 +808,7 @@
       key: "setEasingFunctions",
       value: function setEasingFunctions() {
         var easing;
+        if (this.w.globals.easing) return;
         var userDefinedEasing = this.w.config.chart.animations.easing;
 
         switch (userDefinedEasing) {
@@ -1105,6 +1106,66 @@
         }
 
         return c;
+      }
+    }, {
+      key: "drawRipple",
+      value: function drawRipple(x, y) {
+        var insRadius = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 2;
+        var insRadiusZoom = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 5;
+        var insStrokeWidth = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 1;
+        var outRadius = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 5;
+        var outRadiusZoom = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 10;
+        var outStrokeWidth = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : 1;
+        var borderColor = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : '#f06';
+        var borderColorZoom = arguments.length > 9 && arguments[9] !== undefined ? arguments[9] : '#ffc1e3';
+        var w = this.w;
+        var defaultColor = '#fff';
+        var insC = w.globals.dom.Paper.circle(insRadius).fill('#fff').attr({
+          stroke: defaultColor,
+          'stroke-width': insStrokeWidth
+        }).center(x, y); // region Old code
+        // return w.globals.dom.Paper.circle(outRadius)
+        //   .fill(defaultColor)
+        //   .attr({
+        //     stroke: borderColor,
+        //     'fill-opacity': 0,
+        //     'stroke-width': outStrokeWidth
+        //   })
+        //   .center(x, y)
+        //   .animate(1000, '<>', 150)
+        //   .radius(outRadiusZoom)
+        //   .attr({
+        //     'stroke-width': 0,
+        //     stroke: borderColorZoom
+        //   })
+        //   .during(function(pos, morph, eased, situation) {
+        //     insC
+        //       .animate(1000, '<>', 150)
+        //       .radius(insRadiusZoom)
+        //       .attr({
+        //         'stroke-width': 0,
+        //         stroke: borderColorZoom
+        //       })
+        //       .loop()
+        //   })
+        //   .loop()
+        // endregion
+
+        var outC = w.globals.dom.Paper.circle(outRadius);
+        outC.fill(defaultColor).attr({
+          stroke: borderColor,
+          'fill-opacity': 0,
+          'stroke-width': outStrokeWidth
+        }).center(x, y).animate(1000, '<>', 150).radius(outRadiusZoom).attr({
+          'stroke-width': 0,
+          stroke: borderColorZoom
+        }).during(function (pos, morph, eased, situation) {
+          insC.animate(1000, '<>', 150).radius(insRadiusZoom).attr({
+            'stroke-width': 0,
+            stroke: borderColorZoom
+          }).loop();
+        }).loop();
+        return outC;
       }
     }, {
       key: "drawPath",
@@ -2075,6 +2136,7 @@
               mounted: undefined,
               updated: undefined,
               click: undefined,
+              mouseMove: undefined,
               legendClick: undefined,
               markerClick: undefined,
               selection: undefined,
@@ -2450,6 +2512,7 @@
             width: undefined,
             height: undefined,
             formatter: undefined,
+            tooltipHoverFormatter: undefined,
             offsetX: -20,
             offsetY: 0,
             labels: {
@@ -3033,7 +3096,10 @@
 
         if (this.invertAxis) {
           console.warn('Point annotation is not supported in horizontal bar charts.');
-        }
+        } // Lấy vị trí X và Y
+        // Trường hợp 1: cấu hình là chuỗi
+        // Trường hợp 2: cấu hình là số
+
 
         if (typeof anno.x === 'string') {
           var catIndex = w.globals.labels.indexOf(anno.x);
@@ -3074,8 +3140,17 @@
           radius: anno.marker.radius,
           class: 'apexcharts-point-annotation-marker ' + anno.marker.cssClass
         };
-        var point = this.graphics.drawMarker(x + anno.marker.offsetX, pointY + anno.marker.offsetY, optsPoints);
+        var point = this.graphics.drawMarker(x + anno.marker.offsetX, pointY + anno.marker.offsetY, optsPoints); // Chỗ này có thể add thêm animation và event
+        // point.node
+
         parent.appendChild(point.node);
+        var rippleConfig = anno.ripple;
+
+        if (rippleConfig) {
+          var ripple = this.graphics.drawRipple(x + anno.marker.offsetX, pointY + anno.marker.offsetY, rippleConfig.insRadius, rippleConfig.insRadiusZoom, rippleConfig.insStrokeWidth, rippleConfig.outRadius, rippleConfig.outRadiusZoom, rippleConfig.outStrokeWidth, rippleConfig.borderColor, rippleConfig.borderColorZoom);
+          parent.appendChild(ripple.node);
+        }
+
         var text = anno.label.text ? anno.label.text : '';
         var elText = this.graphics.drawText({
           x: x + anno.label.offsetX,
@@ -3089,8 +3164,11 @@
         });
         elText.attr({
           rel: index
-        });
-        parent.appendChild(elText.node);
+        }); // Chỗ này có thể add thêm animation và event
+        // elText.node
+
+        parent.appendChild(elText.node); // Tùy chỉnh gì ko biết
+        // Có thể là add thêm css
 
         if (anno.customSVG.SVG) {
           var g = this.graphics.group({
@@ -5002,6 +5080,8 @@
           // when user re-opens a collapsed series, it goes here
           dataFormatXNumeric: false,
           // boolean value to indicate user has passed numeric x values
+          capturedSeriesIndex: -1,
+          capturedDataPointIndex: -1,
           selectedDataPoints: [],
           ignoreYAxisIndexes: [],
           // when series are being collapsed in multiple y axes, ignore certain index
@@ -6536,12 +6616,19 @@
         var j = indexes.j;
         var realIndex = indexes.realIndex;
         var bc = indexes.bc;
+        var barXPosition = x + barWidth * this.visibleI;
 
         if (w.globals.isXNumeric) {
-          x = (w.globals.seriesX[i][j] - w.globals.minX) / this.xRatio - barWidth / 2;
+          var sxI = i;
+
+          if (!w.globals.seriesX[i].length) {
+            sxI = w.globals.maxValsInArrayIndex;
+          }
+
+          x = (w.globals.seriesX[sxI][j] - w.globals.minX) / this.xRatio;
+          barXPosition = x + barWidth * this.visibleI - barWidth * this.seriesLen / 2;
         }
 
-        var barXPosition = x + barWidth * this.visibleI;
         pathTo = graphics.move(barXPosition, zeroH);
         pathFrom = graphics.move(barXPosition, zeroH);
 
@@ -6642,7 +6729,7 @@
         var bcy = y + parseFloat(barHeight * visibleSeries);
 
         if (w.globals.isXNumeric && !w.globals.isBarHorizontal) {
-          bcx = x + parseFloat(barWidth * (visibleSeries + 1)) - strokeWidth;
+          bcx = x + parseFloat(barWidth * (visibleSeries + 1)) / 2;
           bcy = y + parseFloat(barHeight * (visibleSeries + 1)) - strokeWidth;
         }
 
@@ -9379,7 +9466,7 @@
           totalAngle = Math.abs(w.config.plotOptions.radialBar.endAngle - w.config.plotOptions.radialBar.startAngle);
         }
 
-        w.globals.radialSize = size - size / (360 / (360 - totalAngle)) + 10;
+        w.globals.radialSize = size - size / (360 / (360 - totalAngle));
         elSeries.add(elG.g);
 
         if (w.config.plotOptions.radialBar.hollow.position === 'front') {
@@ -11858,6 +11945,8 @@
           elLegendText.style.fontFamily = fontFamily || w.config.chart.fontFamily;
           Graphics.setAttrs(elLegendText, {
             rel: i + 1,
+            i: i,
+            'data:default-text': text,
             'data:collapsed': collapsedSeries || ancillaryCollapsedSeries
           });
           elLegend.appendChild(elMarker);
@@ -16087,7 +16176,8 @@
 
           var canvas = document.createElement('canvas');
           canvas.width = w.globals.svgWidth;
-          canvas.height = w.globals.svgHeight;
+          canvas.height = parseInt(w.globals.dom.elWrap.style.height); // because of resizeNonAxisCharts
+
           var canvasBg = w.config.chart.background === 'transparent' ? '#fff' : w.config.chart.background;
           var ctx = canvas.getContext('2d');
           ctx.fillStyle = canvasBg;
@@ -16904,6 +16994,8 @@
           }
         }
 
+        w.globals.capturedSeriesIndex = capturedSeries === null ? -1 : capturedSeries;
+        w.globals.capturedDataPointIndex = j === null ? -1 : j;
         if (!j || j < 1) j = 0;
         return {
           capturedSeries: capturedSeries,
@@ -16987,7 +17079,6 @@
 
           if (newdiff < diff) {
             diff = newdiff;
-            curr = arr[i];
             currIndex = i;
           }
         }
@@ -17032,8 +17123,8 @@
         return false;
       }
     }, {
-      key: "isinitialSeriesSameLen",
-      value: function isinitialSeriesSameLen() {
+      key: "isInitialSeriesSameLen",
+      value: function isInitialSeriesSameLen() {
         var sameLen = true;
         var initialSeries = this.w.globals.initialSeries;
 
@@ -17803,7 +17894,8 @@
       value: function moveStickyTooltipOverBars(j) {
         var w = this.w;
         var ttCtx = this.ttCtx;
-        var jBar = w.globals.dom.baseEl.querySelector(".apexcharts-bar-series .apexcharts-series[rel='1'] path[j='".concat(j, "'], .apexcharts-candlestick-series .apexcharts-series[rel='1'] path[j='").concat(j, "'], .apexcharts-rangebar-series .apexcharts-series[rel='1'] path[j='").concat(j, "']"));
+        var i = w.globals.maxValsInArrayIndex + 1;
+        var jBar = w.globals.dom.baseEl.querySelector(".apexcharts-bar-series .apexcharts-series[rel='".concat(i, "'] path[j='").concat(j, "'], .apexcharts-candlestick-series .apexcharts-series[rel='").concat(i, "'] path[j='").concat(j, "'], .apexcharts-rangebar-series .apexcharts-series[rel='").concat(i, "'] path[j='").concat(j, "']"));
         var bcx = jBar ? parseFloat(jBar.getAttribute('cx')) : 0;
         var bcy = 0;
         var bw = jBar ? parseFloat(jBar.getAttribute('barWidth')) : 0;
@@ -18038,6 +18130,8 @@
             j: j,
             shared: false
           });
+          w.globals.capturedSeriesIndex = i;
+          w.globals.capturedDataPointIndex = j;
           x = cx + ttCtx.tooltipRect.ttWidth / 2 + width;
           y = cy + ttCtx.tooltipRect.ttHeight / 2 - height / 2;
           ttCtx.tooltipPosition.moveXCrosshairs(cx + width / 2);
@@ -18097,6 +18191,8 @@
             ttCtx.markerClick(e, i, j);
           }
 
+          w.globals.capturedSeriesIndex = i;
+          w.globals.capturedDataPointIndex = j;
           x = cx;
           y = cy + w.globals.translateY - ttCtx.tooltipRect.ttHeight * 1.4;
 
@@ -18139,6 +18235,8 @@
         i = barXY.i;
         var barHeight = barXY.barHeight;
         var j = barXY.j;
+        w.globals.capturedSeriesIndex = i;
+        w.globals.capturedDataPointIndex = j;
 
         if (w.globals.isBarHorizontal && ttCtx.hasBars() || !w.config.tooltip.shared) {
           x = barXY.x;
@@ -18576,6 +18674,7 @@
           }
         }
 
+        this.legendLabels = w.globals.dom.baseEl.querySelectorAll('.apexcharts-legend-text');
         this.ttItems = this.createTTElements(ttItemsCnt);
         this.addSVGEvents();
       }
@@ -18888,16 +18987,17 @@
             opt = _ref2.opt;
         var w = this.w;
         var j, x, y;
-        var self = this;
         var capj = null;
         var seriesBound = opt.elGrid.getBoundingClientRect();
         var clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
         var clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
         this.clientY = clientY;
         this.clientX = clientX;
+        w.globals.capturedSeriesIndex = -1;
+        w.globals.capturedDataPointIndex = -1;
 
         if (clientY < seriesBound.top || clientY > seriesBound.top + seriesBound.height) {
-          self.handleMouseOut(opt);
+          this.handleMouseOut(opt);
           return;
         }
 
@@ -18905,7 +19005,7 @@
           var index = parseInt(opt.paths.getAttribute('index'));
 
           if (this.tConfig.enabledOnSeries.indexOf(index) < 0) {
-            self.handleMouseOut(opt);
+            this.handleMouseOut(opt);
             return;
           }
         }
@@ -18923,24 +19023,24 @@
             xcrosshairs.classList.add('active');
           }
 
-          if (self.ycrosshairs !== null && self.blyaxisTooltip) {
-            self.ycrosshairs.classList.add('active');
+          if (this.ycrosshairs !== null && this.blyaxisTooltip) {
+            this.ycrosshairs.classList.add('active');
           }
 
-          if (isStickyTooltip && !self.showOnIntersect) {
-            capj = self.tooltipUtil.getNearestValues({
-              context: self,
+          if (isStickyTooltip && !this.showOnIntersect) {
+            capj = this.tooltipUtil.getNearestValues({
+              context: this,
               hoverArea: opt.hoverArea,
               elGrid: opt.elGrid,
               clientX: clientX,
               clientY: clientY,
-              hasBars: self.hasBars
+              hasBars: this.hasBars
             });
             j = capj.j;
             var capturedSeries = capj.capturedSeries;
 
             if (capj.hoverX < 0 || capj.hoverX > w.globals.gridWidth) {
-              self.handleMouseOut(opt);
+              this.handleMouseOut(opt);
               return;
             }
 
@@ -18948,26 +19048,26 @@
               var ignoreNull = w.globals.series[capturedSeries][j] === null;
 
               if (ignoreNull) {
-                opt.tooltipEl.classList.remove('active');
+                this.handleMouseOut(opt);
                 return;
               }
 
               if (typeof w.globals.series[capturedSeries][j] !== 'undefined') {
-                if (this.tConfig.shared && this.tooltipUtil.isXoverlap(j) && this.tooltipUtil.isinitialSeriesSameLen()) {
-                  this.create(e, self, capturedSeries, j, opt.ttItems);
+                if (this.tConfig.shared && this.tooltipUtil.isXoverlap(j) && this.tooltipUtil.isInitialSeriesSameLen()) {
+                  this.create(e, this, capturedSeries, j, opt.ttItems);
                 } else {
-                  this.create(e, self, capturedSeries, j, opt.ttItems, false);
+                  this.create(e, this, capturedSeries, j, opt.ttItems, false);
                 }
               } else {
                 if (this.tooltipUtil.isXoverlap(j)) {
-                  self.create(e, self, 0, j, opt.ttItems);
+                  this.create(e, this, 0, j, opt.ttItems);
                 }
               }
             } else {
               // couldn't capture any series. check if shared X is same,
               // if yes, draw a grouped tooltip
               if (this.tooltipUtil.isXoverlap(j)) {
-                self.create(e, self, 0, j, opt.ttItems);
+                this.create(e, this, 0, j, opt.ttItems);
               }
             }
           } else {
@@ -19004,7 +19104,7 @@
 
           if (this.blyaxisTooltip) {
             for (var yt = 0; yt < w.config.yaxis.length; yt++) {
-              self.axesTooltip.drawYaxisTooltipText(yt, clientY, self.xyRatios);
+              this.axesTooltip.drawYaxisTooltipText(yt, clientY, this.xyRatios);
             }
           }
 
@@ -19084,6 +19184,13 @@
             this.yaxisTTEls[i].classList.remove('active');
           }
         }
+
+        if (w.config.legend.tooltipHoverFormatter) {
+          this.legendLabels.forEach(function (l) {
+            var defaultText = l.getAttribute('data:default-text');
+            l.innerHTML = defaultText;
+          });
+        }
       }
     }, {
       key: "getElMarkers",
@@ -19145,6 +19252,37 @@
         if (shared === null) shared = this.tConfig.shared;
         var hasMarkers = this.hasMarkers();
         var bars = this.getElBars();
+
+        if (w.config.legend.tooltipHoverFormatter) {
+          var legendFormatter = w.config.legend.tooltipHoverFormatter;
+          var els = Array.from(this.legendLabels); // reset all legend values first
+
+          els.forEach(function (l) {
+            var legendName = l.getAttribute('data:default-text');
+            l.innerHTML = legendName;
+          }); // for irregular time series
+
+          for (var i = 0; i < els.length; i++) {
+            var l = els[i];
+            var lsIndex = parseInt(l.getAttribute('i'));
+            var legendName = l.getAttribute('data:default-text');
+            var text = legendFormatter(legendName, {
+              seriesIndex: shared ? lsIndex : capturedSeries,
+              dataPointIndex: j,
+              w: w
+            });
+
+            if (!shared) {
+              l.innerHTML = lsIndex === capturedSeries ? text : legendName;
+
+              if (capturedSeries === lsIndex) {
+                break;
+              }
+            } else {
+              l.innerHTML = w.globals.collapsedSeriesIndices.indexOf(lsIndex) < 0 ? text : legendName;
+            }
+          }
+        }
 
         if (shared) {
           ttCtx.tooltipLabels.drawSeriesTexts({
@@ -28641,12 +28779,21 @@
         this.eventListHandlers = [];
         this.eventList.forEach(function (event) {
           clickableArea.addEventListener(event, function (e) {
-            if (e.type === 'mousedown' && e.which === 1) ; else if (e.type === 'mouseup' && e.which === 1 || e.type === 'touchend') {
+            var opts = Object.assign({}, w, {
+              seriesIndex: w.globals.capturedSeriesIndex,
+              dataPointIndex: w.globals.capturedDataPointIndex
+            });
+
+            if (e.type === 'mousemove' || e.type === 'touchmove') {
+              if (typeof w.config.chart.events.mouseMove === 'function') {
+                w.config.chart.events.mouseMove(e, me, opts);
+              }
+            } else if (e.type === 'mouseup' && e.which === 1 || e.type === 'touchend') {
               if (typeof w.config.chart.events.click === 'function') {
-                w.config.chart.events.click(e, me, w);
+                w.config.chart.events.click(e, me, opts);
               }
 
-              me.fireEvent('click', [e, me, w]);
+              me.fireEvent('click', [e, me, opts]);
             }
           }, {
             capture: false,

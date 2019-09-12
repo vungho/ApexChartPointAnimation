@@ -437,7 +437,7 @@ export default class Annotations {
         rippleConfig.borderColor,
         rippleConfig.borderColorZoom
       )
-      parent.appendChild(ripple.node())
+      parent.appendChild(ripple.node)
     }
 
     const text = anno.label.text ? anno.label.text : ''

@@ -111,7 +111,37 @@ class Graphics {
         'stroke-width': insStrokeWidth
       })
       .center(x, y)
-    return w.globals.dom.Paper.circle(outRadius)
+
+    // region Old code
+    // return w.globals.dom.Paper.circle(outRadius)
+    //   .fill(defaultColor)
+    //   .attr({
+    //     stroke: borderColor,
+    //     'fill-opacity': 0,
+    //     'stroke-width': outStrokeWidth
+    //   })
+    //   .center(x, y)
+    //   .animate(1000, '<>', 150)
+    //   .radius(outRadiusZoom)
+    //   .attr({
+    //     'stroke-width': 0,
+    //     stroke: borderColorZoom
+    //   })
+    //   .during(function(pos, morph, eased, situation) {
+    //     insC
+    //       .animate(1000, '<>', 150)
+    //       .radius(insRadiusZoom)
+    //       .attr({
+    //         'stroke-width': 0,
+    //         stroke: borderColorZoom
+    //       })
+    //       .loop()
+    //   })
+    //   .loop()
+    // endregion
+
+    var outC = w.globals.dom.Paper.circle(outRadius)
+    outC
       .fill(defaultColor)
       .attr({
         stroke: borderColor,
@@ -136,6 +166,7 @@ class Graphics {
           .loop()
       })
       .loop()
+    return outC
   }
 
   drawPath({
