@@ -1,5 +1,5 @@
-// Typescript declarations for Apex class and module. 
-// Note: When you have a class and a module with the same name; the module is merged 
+// Typescript declarations for Apex class and module.
+// Note: When you have a class and a module with the same name; the module is merged
 // with the class.  This is necessary since apexcharts exports the main ApexCharts class only.
 //
 // This is a sparse typed declarations of chart interfaces.  See Apex Chart documentation
@@ -211,7 +211,7 @@ type ApexTitleSubtitle = {
 };
 
 /**
-* Chart Series options.  
+* Chart Series options.
 * Use ApexNonAxisChartSeries for Pie and Donut charts.
 * See https://apexcharts.com/docs/options/series/
 *
@@ -262,6 +262,17 @@ type AnnotationLabel = {
   position?: string;
   orientation?: string;
 };
+
+type AnnotationRipple = {
+  borderColor?: string;
+  borderColorZoom?: string;
+  insRadius?: number;
+  insRadiusZoom?: number;
+  insStrokeWidth?: number;
+  outRadius?: number;
+  outRadiusZoom?: number;
+  outStrokeWidth?: number;
+}
 
 type AnnotationStyle = {
   background?: string;
@@ -320,6 +331,7 @@ type PointAnnotations = {
     cssClass?: string;
   };
   label?: AnnotationLabel;
+  ripple?: AnnotationRipple;
 };
 
 /**

@@ -89,6 +89,55 @@ class Graphics {
     return c
   }
 
+  drawRipple(
+    x,
+    y,
+    insRadius = 2,
+    insRadiusZoom = 5,
+    insStrokeWidth = 1,
+    outRadius = 5,
+    outRadiusZoom = 10,
+    outStrokeWidth = 1,
+    borderColor = '#f06',
+    borderColorZoom = '#ffc1e3'
+  ) {
+    const w = this.w
+    const defaultColor = '#fff'
+
+    const insC = w.globals.dom.Paper.circle(insRadius)
+      .fill('#fff')
+      .attr({
+        stroke: defaultColor,
+        'stroke-width': insStrokeWidth
+      })
+      .center(x, y)
+    return w.globals.dom.Paper.circle(outRadius)
+      .fill(defaultColor)
+      .attr({
+        stroke: borderColor,
+        'fill-opacity': 0,
+        'stroke-width': outStrokeWidth
+      })
+      .center(x, y)
+      .animate(1000, '<>', 150)
+      .radius(outRadiusZoom)
+      .attr({
+        'stroke-width': 0,
+        stroke: borderColorZoom
+      })
+      .during(function(pos, morph, eased, situation) {
+        insC
+          .animate(1000, '<>', 150)
+          .radius(insRadiusZoom)
+          .attr({
+            'stroke-width': 0,
+            stroke: borderColorZoom
+          })
+          .loop()
+      })
+      .loop()
+  }
+
   drawPath({
     d = '',
     stroke = '#a8a8a8',
