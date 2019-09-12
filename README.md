@@ -1,3 +1,7 @@
+#Note
+This is small custom chart, base on Apex charts (include ripple point effect).   
+About Apex charts, please read more from:  <a href="https://github.com/apexcharts/apexcharts.js">ApexChart repo</a> or
+ below information: 
 <p align="center"><img src="https://apexcharts.com/media/apexcharts-logo.png"></p>
 
 <p align="center">
