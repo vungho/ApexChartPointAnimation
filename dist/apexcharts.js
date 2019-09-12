@@ -1110,60 +1110,21 @@
     }, {
       key: "drawRipple",
       value: function drawRipple(x, y) {
-        var insRadius = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 2;
-        var insRadiusZoom = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 5;
-        var insStrokeWidth = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 1;
-        var outRadius = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : 5;
-        var outRadiusZoom = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : 10;
-        var outStrokeWidth = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : 1;
-        var borderColor = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : '#f06';
-        var borderColorZoom = arguments.length > 9 && arguments[9] !== undefined ? arguments[9] : '#ffc1e3';
+        var radius = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 2;
+        var radiusZoom = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 5;
+        var strokeWidth = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : 1;
+        var borderColor = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : '#f06';
+        var borderColorZoom = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : '#ffc1e3';
         var w = this.w;
         var defaultColor = '#fff';
-        var insC = w.globals.dom.Paper.circle(insRadius).fill('#fff').attr({
-          stroke: defaultColor,
-          'stroke-width': insStrokeWidth
-        }).center(x, y); // region Old code
-        // return w.globals.dom.Paper.circle(outRadius)
-        //   .fill(defaultColor)
-        //   .attr({
-        //     stroke: borderColor,
-        //     'fill-opacity': 0,
-        //     'stroke-width': outStrokeWidth
-        //   })
-        //   .center(x, y)
-        //   .animate(1000, '<>', 150)
-        //   .radius(outRadiusZoom)
-        //   .attr({
-        //     'stroke-width': 0,
-        //     stroke: borderColorZoom
-        //   })
-        //   .during(function(pos, morph, eased, situation) {
-        //     insC
-        //       .animate(1000, '<>', 150)
-        //       .radius(insRadiusZoom)
-        //       .attr({
-        //         'stroke-width': 0,
-        //         stroke: borderColorZoom
-        //       })
-        //       .loop()
-        //   })
-        //   .loop()
-        // endregion
-
-        var outC = w.globals.dom.Paper.circle(outRadius);
+        var outC = w.globals.dom.Paper.circle(radius);
         outC.fill(defaultColor).attr({
           stroke: borderColor,
           'fill-opacity': 0,
-          'stroke-width': outStrokeWidth
-        }).center(x, y).animate(1000, '<>', 150).radius(outRadiusZoom).attr({
+          'stroke-width': strokeWidth
+        }).center(x, y).animate(1000, '<>', 150).radius(radiusZoom).attr({
           'stroke-width': 0,
           stroke: borderColorZoom
-        }).during(function (pos, morph, eased, situation) {
-          insC.animate(1000, '<>', 150).radius(insRadiusZoom).attr({
-            'stroke-width': 0,
-            stroke: borderColorZoom
-          }).loop();
         }).loop();
         return outC;
       }
@@ -3147,8 +3108,12 @@
         var rippleConfig = anno.ripple;
 
         if (rippleConfig) {
-          var ripple = this.graphics.drawRipple(x + anno.marker.offsetX, pointY + anno.marker.offsetY, rippleConfig.insRadius, rippleConfig.insRadiusZoom, rippleConfig.insStrokeWidth, rippleConfig.outRadius, rippleConfig.outRadiusZoom, rippleConfig.outStrokeWidth, rippleConfig.borderColor, rippleConfig.borderColorZoom);
-          parent.appendChild(ripple.node);
+          var rippleX = x + anno.marker.offsetX;
+          var rippleY = pointY + anno.marker.offsetY;
+          var rippleOutside = this.graphics.drawRipple(rippleX, rippleY, rippleConfig.outRadius, rippleConfig.outRadiusZoom, rippleConfig.outStrokeWidth, rippleConfig.borderColor, rippleConfig.borderColorZoom);
+          var rippleInside = this.graphics.drawRipple(rippleX, rippleY, rippleConfig.insRadius, rippleConfig.insRadiusZoom, rippleConfig.insStrokeWidth, rippleConfig.borderColor, rippleConfig.borderColorZoom);
+          parent.appendChild(rippleOutside.node);
+          parent.appendChild(rippleInside.node);
         }
 
         var text = anno.label.text ? anno.label.text : '';

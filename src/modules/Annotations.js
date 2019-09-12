@@ -425,19 +425,28 @@ export default class Annotations {
 
     const rippleConfig = anno.ripple
     if (rippleConfig) {
-      let ripple = this.graphics.drawRipple(
-        x + anno.marker.offsetX,
-        pointY + anno.marker.offsetY,
-        rippleConfig.insRadius,
-        rippleConfig.insRadiusZoom,
-        rippleConfig.insStrokeWidth,
+      const rippleX = x + anno.marker.offsetX
+      const rippleY = pointY + anno.marker.offsetY
+      let rippleOutside = this.graphics.drawRipple(
+        rippleX,
+        rippleY,
         rippleConfig.outRadius,
         rippleConfig.outRadiusZoom,
         rippleConfig.outStrokeWidth,
         rippleConfig.borderColor,
         rippleConfig.borderColorZoom
       )
-      parent.appendChild(ripple.node)
+      let rippleInside = this.graphics.drawRipple(
+        rippleX,
+        rippleY,
+        rippleConfig.insRadius,
+        rippleConfig.insRadiusZoom,
+        rippleConfig.insStrokeWidth,
+        rippleConfig.borderColor,
+        rippleConfig.borderColorZoom
+      )
+      parent.appendChild(rippleOutside.node)
+      parent.appendChild(rippleInside.node)
     }
 
     const text = anno.label.text ? anno.label.text : ''

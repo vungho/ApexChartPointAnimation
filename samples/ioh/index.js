@@ -2,7 +2,7 @@ const rippleConfig = {
   borderColor: '#f06',
   borderColorZoom: '#ffc1e3',
   insRadius: 2,
-  insRadiusZoom: 5,
+  insRadiusZoom: 10,
   insStrokeWidth: 2,
   outRadius: 5,
   outRadiusZoom: 15,
