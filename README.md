@@ -1,7 +1,7 @@
 #Note
 This is small custom chart, base on Apex charts (include ripple point effect).  
-Video review: **./review/Ripple record.mp4**  
-Link sample:  **./samples/ioh**
+Video demo:
+[![Ripple](http://img.youtube.com/vi/qESGw5TC0zw/0.jpg)](https://youtu.be/qESGw5TC0zw "Ripple")
  
 About Apex charts, please read more from:  <a href="https://github.com/apexcharts/apexcharts.js">ApexChart repo</a> or
  below information: 
