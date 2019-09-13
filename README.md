@@ -1,7 +1,8 @@
 #Note
 This is small custom chart, base on Apex charts (include ripple point effect).  
 Video demo:
-[![Ripple](http://img.youtube.com/vi/qESGw5TC0zw/0.jpg)](https://youtu.be/qESGw5TC0zw "Ripple")
+[![Ripple](http://img.youtube.com/vi/qESGw5TC0zw/0.jpg)](https://youtu.be/qESGw5TC0zw "Ripple")  
+Sample: **samples/ioh**
  
 About Apex charts, please read more from:  <a href="https://github.com/apexcharts/apexcharts.js">ApexChart repo</a> or
  below information: 
