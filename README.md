@@ -1,6 +1,6 @@
 #Note
 This is small custom chart, base on Apex charts (include ripple point effect).  
-Video demo:
+Video demo:  
 [![Ripple](http://img.youtube.com/vi/qESGw5TC0zw/0.jpg)](https://youtu.be/qESGw5TC0zw "Ripple")  
 Sample: **samples/ioh**
  
